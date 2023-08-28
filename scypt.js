@@ -51,17 +51,43 @@ function displayBooks() {
 displayBooks()
 
 function toggleForm() {
-    formElement = document.getElementById("form")
+    formElement = document.querySelector("form")
     formElement.toggleAttribute("hidden")
 }
-//handles new books
-const submit = document.getElementById("submit")
-submit.addEventListener("click", addNewBook)
+// handles new books
+const submit = document.querySelector("#submit")
+submit.addEventListener("click", (event) => {
+
+    // check if a value is missing;
+    const formInputs = document.querySelectorAll("input[required]")
+    const allFilled = Array.from(formInputs).every((input) => {
+        // remove invalid class from every inputs
+        input.classList.remove("invalid")
+        // hide error
+        document.querySelector("#error").toggleAttribute("hidden")
+        return !input.validity.valueMissing
+    })
+    if (allFilled) {
+        addNewBook()
+        toggleForm();
+    }
+    else {
+        formInputs.forEach((input) => {
+            // prevent resetting
+            event.preventDefault()
+            //show error
+            document.querySelector("#error").toggleAttribute("hidden")
+            if (input.validity.valueMissing) {
+                //add invalid class to empty inputs
+                input.classList.add("invalid")
+            }
+        })
+    }
+})
 function addNewBook() {
     const form = new FormData(formElement);
     addBookToLibrary(form.get("title"), form.get("author"), form.get("pages"), form.get("read"));
     createCard(myLibrary[myLibrary.length - 1]);
-    toggleForm();
 }
 function removeBook(e) {
     const index = e.target.parentElement.dataset.index;
@@ -70,7 +96,7 @@ function removeBook(e) {
     Card.remove();
 }
 
-//change read status
+// change read status
 function toggleReadStatus(e) {
     const index = e.target.parentElement.dataset.index;
     const readButton = e.target;
